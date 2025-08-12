@@ -1,0 +1,142 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 70px;
+  background-color: #f8f9fa;
+}
+
+.navbar-brand h1 {
+  color: #f1c40f;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  cursor: pointer;
+}
+
+.navbar-search {
+  flex: 1;
+  max-width: 500px;
+  margin: 0 2rem;
+}
+
+.search-form {
+  width: 100%;
+}
+
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 50px 12px 20px;
+  border: 5px solid #e9ecef;
+  border-radius: 25px;
+  font-size: 16px;
+  background-color: white;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+}
+
+.search-input::placeholder {
+  color: #6c757d;
+}
+
+.search-button {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+  background-color: #f8f9fa;
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  color: #6c757d;
+}
+
+/* Actions Section */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.notification-btn,
+.settings-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.notification-btn:hover,
+.settings-btn:hover {
+  background-color: #e9ecef;
+}
+
+.notification-icon,
+.settings-icon {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+  color: #495057;
+}
+
+/* User Profile */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 25px;
+  transition: background-color 0.3s ease;
+}
+
+.user-profile:hover {
+  background-color: #e9ecef;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #495057;
+  font-size: 16px;
+}
