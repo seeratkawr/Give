@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./NavBar.css";
 import { ReactComponent as NotificationIcon } from "../assets/notification.svg";
+import { ReactComponent as SettingsIcon } from "../assets/settings.svg";
 
 export default function NavBar() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,7 +57,7 @@ export default function NavBar() {
         <div className="user-profile">
           <div className="user-avatar">
             <img
-              src="https://via.placeholder.com/40x40/FF6B6B/FFFFFF?text=KS"
+              src="https://placehold.co/600x400.png"
               alt="User Avatar"
               className="avatar-image"
             />
@@ -64,17 +65,8 @@ export default function NavBar() {
           <span className="user-name">Kate Smith</span>
         </div>
 
-        <button className="setting-btn">
-          <svg
-            className="settings-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M12 1v6m0 6v6"></path>
-            <path d="m21 12-6 0m-6 0-6 0"></path>
-          </svg>
+        <button className="settings-btn">
+          <SettingsIcon className="settings-icon" />
         </button>
       </div>
     </nav>
