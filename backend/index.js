@@ -1,9 +1,10 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 
-const authRoutes = require("./routes/authRoutes");
-const searchRoutes = require("./routes/searchRoutes");
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

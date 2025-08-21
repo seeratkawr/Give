@@ -1,7 +1,12 @@
-import { searchFirestore } from '../services/searchService.js';
+import { searchFirestore } from "../services/searchService.js";
 
 export async function searchController(req, res) {
   const q = req.query.q || "";
+
+  if (!q.trim()) {
+    return res.json([]);
+  }
+
   try {
     const results = await searchFirestore(q);
     res.json(results);

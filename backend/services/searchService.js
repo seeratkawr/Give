@@ -1,42 +1,54 @@
-import {
-  collection,
-  query,
-  orderBy,
-  startAt,
-  endAt,
-  getDocs,
-} from "firebase/firestore";
-import { db } from "../firebase.js";
+import { db } from "../firebase/firebase.js"; // this is admin.firestore()
 
 export async function searchFirestore(searchQuery) {
   if (!searchQuery.trim()) return [];
 
-  const collections = [
-    { name: "groups", field: "name" },
-    { name: "posts", field: "content" },
-    //{ name: "users", field: "name" },
-  ];
+  const allResults = [];
+  const normalizedQuery = searchQuery.toLowerCase();
 
-  let allResults = [];
+  // 1. Groups
+  const groupSnap = await db
+    .collection("groups")
+    .where("name_lowercase", ">=", normalizedQuery)
+    .where("name_lowercase", "<=", normalizedQuery + "\uf8ff")
+    .get();
 
-  for (const col of collections) {
-    const colRef = collection(db, col.name);
-    const q = query(
-      colRef,
-      orderBy(col.field),
-      startAt(searchQuery),
-      endAt(searchQuery + "\uf8ff")
-    );
+  groupSnap.forEach((doc) =>
+    allResults.push({ id: doc.id, ...doc.data(), type: "groups" })
+  );
 
-    const snapshot = await getDocs(q);
-    const results = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      type: col.name,
-    }));
+  // 2. Posts (by content)
+  const postsSnap = await db
+    .collection("posts")
+    .where("content_lowercase", ">=", normalizedQuery)
+    .where("content_lowercase", "<=", normalizedQuery + "\uf8ff")
+    .get();
 
-    allResults = [...allResults, ...results];
-  }
+  postsSnap.forEach((doc) =>
+    allResults.push({ id: doc.id, ...doc.data(), type: "posts" })
+  );
+
+  // 3. Posts (by tags)
+  const postsTagSnap = await db
+    .collection("posts")
+    .where("tags_lowercase", ">=", normalizedQuery)
+    .where("tags_lowercase", "<=", normalizedQuery + "\uf8ff")
+    .get();
+
+  postsTagSnap.forEach((doc) =>
+    allResults.push({ id: doc.id, ...doc.data(), type: "posts" })
+  );
+
+  // 4. Users
+  const usersSnap = await db
+    .collection("users")
+    .where("fullName_lowercase", ">=", normalizedQuery)
+    .where("fullName_lowercase", "<=", normalizedQuery + "\uf8ff")
+    .get();
+
+  usersSnap.forEach((doc) =>
+    allResults.push({ id: doc.id, ...doc.data(), type: "users" })
+  );
 
   return allResults;
 }

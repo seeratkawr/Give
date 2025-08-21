@@ -1,13 +1,25 @@
-// const admin = require('firebase-admin');
-// const path = require('path');
-// require('dotenv').config();
+import admin from "firebase-admin";
+import path from "path";
+import { fileURLToPath } from "url";
+import { readFileSync } from "fs";
+import dotenv from "dotenv";
 
-// const serviceAccountPath = path.resolve(__dirname, process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(require(serviceAccountPath)),
-// });
+dotenv.config();
 
-// const db = admin.firestore();
+const serviceAccountPath = path.resolve(
+  __dirname,
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY || "serviceAccountKey.json"
+);
 
-// module.exports = { admin, db };
+const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const db = admin.firestore();
+
+export { admin, db };
