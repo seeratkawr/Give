@@ -2,6 +2,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../styles/App.css";
+import PollBox from "./PollBox";
 
 const baseSettings = {
   dots: true,
@@ -15,7 +16,7 @@ const baseSettings = {
   arrows: false,
 };
 
-const PostData = ({ post }) => {
+const PostData = ({ post, refreshPosts }) => {
   const question = post?.question ?? "";
   const contentText = typeof post?.content === "string" ? post.content : "";
   const images = Array.isArray(post?.mediaUrls)
@@ -59,18 +60,11 @@ const PostData = ({ post }) => {
 
       {/* ✅ Poll rendering */}
       {polls.length > 0 && (
-        <div className="flex flex-col gap-2 mt-2">
-          {polls.map((option, idx) => (
-            <button
-              key={idx}
-              type="button"
-              className="w-full text-left px-3 py-2 bg-gray-100 rounded-md hover:bg-gray-200 text-sm"
-              disabled
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <PollBox
+          postId={post.id}
+          initialOptions={polls}
+          refreshPosts={refreshPosts}
+        />
       )}
 
       {tags.length > 0 && (

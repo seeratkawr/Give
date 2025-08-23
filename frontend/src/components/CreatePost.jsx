@@ -3,6 +3,7 @@ import "../styles/index.css";
 import imageIcon from "../assets/imageIcon.svg";
 import { uploadManyAndGetUrls } from "../lib/StorageUpload";
 import { useAuth } from "../contexts/AuthContext";
+import PostData from "./PostData";
 
 // Create a post via backend
 export async function createPostViaApi({
@@ -139,7 +140,7 @@ export default function ResponsiveContainer() {
       const { urls } = await uploadManyAndGetUrls(files, currentUser.uid);
 
       const cleanPolls = pollOptions
-        .map((o) => ({ label: o.label.trim() }))
+        .map((o) => ({ label: o.label.trim(), votes: 0 }))
         .filter((o) => o.label.length > 0)
         .slice(0, 4);
 
@@ -166,6 +167,12 @@ export default function ResponsiveContainer() {
       setError(err.message || "Failed to create post");
     } finally {
       setSubmitting(false);
+    }
+
+    {
+      posts.map((post) => (
+        <PostData key={post.id} post={post} refreshPosts={refreshPosts} />
+      ));
     }
   }
 

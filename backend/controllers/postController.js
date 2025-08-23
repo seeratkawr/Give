@@ -24,7 +24,7 @@ exports.createPost = async (req, res) => {
       polls: Array.isArray(polls)
         ? polls
             .slice(0, 4)
-            .map((p) => ({ label: String(p.label || "").trim() }))
+            .map((p) => ({ label: String(p.label || "").trim(), votes: 0 }))
             .filter((p) => p.label)
         : [],
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -52,5 +52,35 @@ exports.getPosts = async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to fetch posts" });
+  }
+};
+
+exports.votePoll = async (req, res) => {
+  try {
+    const { postId } = req.params; // Changed from postID to postId
+    const { optionIndex } = req.body;
+
+    if (typeof optionIndex !== "number")
+      return res.status(400).json({ error: "optionIndex is required" });
+
+    const postRef = db.collection("posts").doc(postId); // Changed from postID to postId
+    const postSnap = await postRef.get();
+    if (!postSnap.exists)
+      return res.status(404).json({ error: "Post not found" });
+
+    const postData = postSnap.data();
+    if (!Array.isArray(postData.polls) || !postData.polls[optionIndex])
+      return res.status(400).json({ error: "Invalid poll option" });
+
+    //Increment the vote count atomically
+    const voteField = `polls.${optionIndex}.votes`;
+    await postRef.update({
+      [voteField]: admin.firestore.FieldValue.increment(1),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to vote" });
   }
 };
