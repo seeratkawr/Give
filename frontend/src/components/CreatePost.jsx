@@ -304,7 +304,7 @@ export default function ResponsiveContainer() {
                     placeholder={`Option ${idx + 1}`}
                     maxLength={80}
                     disabled={submitting}
-                    className="flex-1 bg-backgroundGrey text-sm text-gray-900 rounded-md px-3 py-2 focus:outline-none placeholder:text-gray-400"
+                    className="flex-grow max-w-[75%] bg-backgroundGrey text-sm text-gray-900 rounded-md px-3 py-2 focus:outline-none placeholder:text-gray-400"
                   />
                   <button
                     type="button"
