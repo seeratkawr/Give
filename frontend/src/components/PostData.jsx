@@ -1,7 +1,7 @@
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import "../styles/App.css"; 
+import "../styles/App.css";
 
 const baseSettings = {
   dots: true,
@@ -20,10 +20,11 @@ const PostData = ({ post }) => {
   const contentText = typeof post?.content === "string" ? post.content : "";
   const images = Array.isArray(post?.mediaUrls)
     ? post.mediaUrls
-    : Array.isArray(post?.content) 
+    : Array.isArray(post?.content)
     ? post.content
     : [];
   const tags = Array.isArray(post?.tags) ? post.tags : [];
+  const polls = Array.isArray(post?.polls) ? post.polls : [];
 
   // Adjust slider behavior based on image count
   const settings = {
@@ -54,6 +55,22 @@ const PostData = ({ post }) => {
             </div>
           ))}
         </Slider>
+      )}
+
+      {/* ✅ Poll rendering */}
+      {polls.length > 0 && (
+        <div className="flex flex-col gap-2 mt-2">
+          {polls.map((option, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className="w-full text-left px-3 py-2 bg-gray-100 rounded-md hover:bg-gray-200 text-sm"
+              disabled
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       )}
 
       {tags.length > 0 && (

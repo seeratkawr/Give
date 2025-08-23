@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import "../styles/index.css";
 import imageIcon from "../assets/imageIcon.svg";
 import { uploadManyAndGetUrls } from "../lib/StorageUpload";
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from "../contexts/AuthContext";
 
 // Create a post via backend
 export async function createPostViaApi({
@@ -10,7 +10,7 @@ export async function createPostViaApi({
   content,
   mediaUrls = [],
   tags = [],
-  // polls = [],
+  polls = [],
 }) {
   const body = {
     content,
@@ -19,7 +19,7 @@ export async function createPostViaApi({
     authorId: currentUser?.uid ?? null,
     authorDisplayName: currentUser?.displayName ?? null,
     authorPhotoURL: currentUser?.photoURL ?? null,
-    // polls,
+    polls,
   };
 
   // Send the post request
@@ -57,12 +57,14 @@ export default function ResponsiveContainer() {
   const [error, setError] = useState("");
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const [pollOptions, setPollOptions] = useState([]);
+  const [pollOptions, setPollOptions] = useState([]);
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const fileInputRef = useRef(null);
 
-  {/* Image Uploading functions */}
+  {
+    /* Image Uploading functions */
+  }
   function openFilePicker() {
     fileInputRef.current?.click();
   }
@@ -80,22 +82,24 @@ export default function ResponsiveContainer() {
     setFiles((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  {/* Poll Functions */}
-  // function handleAddOption() {
-  //   setPollOptions((opts) =>
-  //     opts.length >= 4 ? opts : [...opts, { label: "" }]
-  //   );
-  // }
+  {
+    /* Poll Functions */
+  }
+  function handleAddOption() {
+    setPollOptions((opts) =>
+      opts.length >= 4 ? opts : [...opts, { label: "" }]
+    );
+  }
 
-  // function handleOptionChange(index, value) {
-  //   setPollOptions((opts) =>
-  //     opts.map((o, i) => (i === index ? { ...o, label: value } : o))
-  //   );
-  // }
+  function handleOptionChange(index, value) {
+    setPollOptions((opts) =>
+      opts.map((o, i) => (i === index ? { ...o, label: value } : o))
+    );
+  }
 
-  // function handleRemoveOption(index) {
-  //   setPollOptions((opts) => opts.filter((_, i) => i !== index));
-  // }
+  function handleRemoveOption(index) {
+    setPollOptions((opts) => opts.filter((_, i) => i !== index));
+  }
 
   // Set previews for images uploads
   useEffect(() => {
@@ -125,7 +129,7 @@ export default function ResponsiveContainer() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-   
+
     if (!text.trim()) return setError("Please enter some text.");
     if (!currentUser) return setError("Please log in before posting.");
 
@@ -134,10 +138,10 @@ export default function ResponsiveContainer() {
 
       const { urls } = await uploadManyAndGetUrls(files, currentUser.uid);
 
-      // const cleanPolls = pollOptions
-      // .map(o => ({ label: o.label.trim() }))
-      // .filter(o => o.label.length > 0)
-      // .slice(0, 4);
+      const cleanPolls = pollOptions
+        .map((o) => ({ label: o.label.trim() }))
+        .filter((o) => o.label.length > 0)
+        .slice(0, 4);
 
       await createPostViaApi({
         currentUser,
@@ -147,16 +151,15 @@ export default function ResponsiveContainer() {
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean),
-        // polls: cleanPolls,
+        polls: cleanPolls,
       });
-
 
       setText("");
       setTags("");
       setFiles([]);
       previews.forEach(URL.revokeObjectURL);
       setPreviews([]);
-      // setPollOptions([]);
+      setPollOptions([]);
 
       await refreshPosts();
     } catch (err) {
@@ -208,9 +211,7 @@ export default function ResponsiveContainer() {
                   id="medium-input"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder={
-                   "What's on your mind?"
-                  }
+                  placeholder={"What's on your mind?"}
                   disabled={submitting}
                   rows={3}
                   className=" text-sm w-full text-gray-900 focus:outline-none  bg-darkGrey disabled:opacity-60 "
@@ -224,7 +225,7 @@ export default function ResponsiveContainer() {
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="Add tags (comma-separated)"
-                  disabled={ submitting}
+                  disabled={submitting}
                   className="w-full text-sm text-gray-900 rounded-md
                              px-3 py-2 focus:outline-none 
                              placeholder:text-gray-400"
@@ -240,7 +241,6 @@ export default function ResponsiveContainer() {
             </h3>
 
             <div className="relative mb-6 w-full min-h-56 bg-darkGrey px-4 py-8 rounded-lg">
-             
               {previews.length > 0 && (
                 <div className="grid grid-cols-3 gap-3 pr-14">
                   {previews.map((src, idx) => (
@@ -295,7 +295,7 @@ export default function ResponsiveContainer() {
             </h3>
             <div className="w-full text-left space-y-2">
               {/* Render current options */}
-              {/* {pollOptions.map((opt, idx) => (
+              {pollOptions.map((opt, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <input
                     type="text"
@@ -316,13 +316,13 @@ export default function ResponsiveContainer() {
                     Remove
                   </button>
                 </div>
-              ))} */}
+              ))}
 
               {/* Add-option button, disabled at 4 */}
-              {/* <button
+              <button
                 type="button"
                 onClick={handleAddOption}
-                disabled={pollOptions.length >= 4  || submitting}
+                disabled={pollOptions.length >= 4 || submitting}
                 className="bg-backgroundGrey text-gray-700 text-lg font-semibold pb-1 pt-0.5 px-2.5 rounded-lg disabled:opacity-50"
                 title={
                   pollOptions.length >= 4
@@ -331,12 +331,12 @@ export default function ResponsiveContainer() {
                 }
               >
                 +
-              </button> */}
+              </button>
 
               {/* Tiny helper text */}
-              {/* <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500">
                 {pollOptions.length}/4 options
-              </p> */}
+              </p>
             </div>
             {error && <p className="text-red-600 mt-4">{error}</p>}
 
