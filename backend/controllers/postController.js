@@ -60,14 +60,12 @@ exports.getPosts = async (req, res) => {
 exports.votePoll = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { optionIndex, userId } = req.body;
+    const { optionIndex } = req.body;
 
-    console.log("Vote request received:", { postId, optionIndex, userId });
+    console.log("Vote request received:", { postId, optionIndex });
 
     if (typeof optionIndex !== "number")
       return res.status(400).json({ error: "optionIndex is required" });
-
-    if (!userId) return res.status(400).json({ error: "userId is required" });
 
     const postRef = db.collection("posts").doc(postId);
     const postSnap = await postRef.get();
@@ -75,46 +73,37 @@ exports.votePoll = async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
 
     const postData = postSnap.data();
-    console.log("Current post data:", JSON.stringify(postData, null, 2));
+    console.log(
+      "Post data before vote:",
+      JSON.stringify(postData.polls, null, 2)
+    );
 
     if (!Array.isArray(postData.polls) || !postData.polls[optionIndex])
       return res.status(400).json({ error: "Invalid poll option" });
 
-    // Handle posts without voters array (legacy posts)
-    const voters = postData.voters || [];
-    console.log("Current voters:", voters);
-    console.log("User trying to vote:", userId);
-
-    if (voters.includes(userId)) {
-      console.log("User has already voted!");
-      return res
-        .status(400)
-        .json({ error: "You have already voted on this poll" });
-    }
-
-    // Update polls and add voter
+    // Instead of using FieldValue.increment, let's update the entire polls array
     const updatedPolls = [...postData.polls];
     updatedPolls[optionIndex] = {
       ...updatedPolls[optionIndex],
       votes: (updatedPolls[optionIndex].votes || 0) + 1,
     };
 
-    const updatedVoters = [...voters, userId];
+    console.log("Updated polls array:", JSON.stringify(updatedPolls, null, 2));
 
-    console.log("Updated polls:", JSON.stringify(updatedPolls, null, 2));
-    console.log("Updated voters:", updatedVoters);
-
-    // Update the post with both polls and voters
-    const updateData = {
+    await postRef.update({
       polls: updatedPolls,
-      voters: updatedVoters,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    // If voters field didn't exist before, this will create it
-    await postRef.update(updateData);
+    });
 
     console.log("Vote update successful");
+
+    // Get the updated post to verify
+    const updatedSnap = await postRef.get();
+    console.log(
+      "Post data after vote:",
+      JSON.stringify(updatedSnap.data().polls, null, 2)
+    );
+
     res.json({ success: true });
   } catch (err) {
     console.error("Vote error:", err);
