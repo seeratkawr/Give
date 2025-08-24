@@ -69,7 +69,7 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
         return (
           <div
             key={index}
-            role="button" // Marks it as interactive
+            role="button"
             tabIndex={0}
             className={`relative bg-pollBarGrey rounded-[0.6rem] ${
               !hasVoted && !voting
@@ -77,6 +77,16 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
                 : "cursor-default"
             }`}
             onClick={() => !hasVoted && !voting && handleVote(index)}
+            onKeyDown={(e) => {
+              if (
+                (e.key === "Enter" || e.key === " ") &&
+                !hasVoted &&
+                !voting
+              ) {
+                e.preventDefault(); // Prevent scrolling for Space
+                handleVote(index);
+              }
+            }}
           >
             {/* Progress bar - show after voting */}
             {hasVoted && (
