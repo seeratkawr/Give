@@ -69,6 +69,8 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
         return (
           <div
             key={index}
+            role="button" // Marks it as interactive
+            tabIndex={0}
             className={`relative bg-pollBarGrey rounded-[0.6rem] ${
               !hasVoted && !voting
                 ? "hover:bg-pollBarHover cursor-pointer"
