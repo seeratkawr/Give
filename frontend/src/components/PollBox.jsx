@@ -69,25 +69,33 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
         return (
           <div
             key={index}
+            role="button" // tell screen readers it’s a button
+            tabIndex={0} // make it focusable via keyboard
             className={`relative bg-pollBarGrey rounded-[0.6rem] ${
               !hasVoted && !voting
                 ? "hover:bg-pollBarHover cursor-pointer"
                 : "cursor-default"
             }`}
             onClick={() => !hasVoted && !voting && handleVote(index)}
+            onKeyDown={(e) => {
+              if (
+                (e.key === "Enter" || e.key === " ") &&
+                !hasVoted &&
+                !voting
+              ) {
+                e.preventDefault();
+                handleVote(index);
+              }
+            }}
           >
-            {/* Progress bar - show after voting */}
             {hasVoted && (
               <span
                 className="absolute top-0 left-0 h-full transition-all duration-500 bg-defaultYellow rounded-[0.6rem]"
                 style={{ width: `${percentage}%` }}
               />
             )}
-
             <div className="relative font-normal text-black text-[0.8rem] leading-[3.1] px-4 py-2 rounded-[0.6rem] flex justify-between items-center">
               <span>{option.label}</span>
-
-              {/* Show vote count and percentage after voting */}
               {hasVoted && (
                 <div className="flex items-center gap-2 text-xs">
                   <span>{option.votes || 0} votes</span>
