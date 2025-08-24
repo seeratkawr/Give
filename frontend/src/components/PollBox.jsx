@@ -1,32 +1,68 @@
 import { useState, useEffect } from "react";
 
+/**
+ * PollBox Component
+ *
+ * Renders an interactive poll with voting functionality.
+ * Shows poll options before voting and results with percentages after voting.
+ *
+ * @param {string} postId - Unique identifier for the post containing this poll
+ * @param {Array} initialOptions - Array of poll options with labels and vote counts
+ * @param {Function} refreshPosts - Callback function to refresh post data after voting
+ */
 export default function PollBox({ postId, initialOptions, refreshPosts }) {
+  // State to track if the current user has voted on this poll
   const [hasVoted, setHasVoted] = useState(false);
+
+  // State to track if a vote submission is in progress
   const [voting, setVoting] = useState(false);
+
+  // Local copy of poll options that updates when initialOptions change
   const [currentOptions, setCurrentOptions] = useState(initialOptions);
 
-  // Update current options when initialOptions change (from refreshPosts)
+  /**
+   * Effect to update local options when parent component refreshes data
+   * This ensures the component displays the latest vote counts
+   */
   useEffect(() => {
     setCurrentOptions(initialOptions);
   }, [initialOptions]);
 
+  /**
+   * Calculate total votes across all poll options
+   * Used for percentage calculations and display
+   */
   const totalVotes = currentOptions.reduce(
     (sum, opt) => sum + (opt.votes || 0),
     0
   );
 
+  /**
+   * Calculate percentage of votes for a specific option
+   * @param {number} optionVotes - Number of votes for this option
+   * @returns {number} Percentage rounded to nearest whole number
+   */
   const getPercentage = (optionVotes) => {
     if (totalVotes === 0) return 0;
     return Math.round((optionVotes / totalVotes) * 100);
   };
 
+  /**
+   * Handle voting for a specific poll option
+   * Sends vote to backend, refreshes data, and updates UI state
+   *
+   * @param {number} optionIndex - Index of the selected poll option
+   */
   const handleVote = async (optionIndex) => {
+    // Prevent voting if already voted or currently submitting
     if (hasVoted || voting) return;
 
+    // Set loading state
     setVoting(true);
     console.log(`Voting for option ${optionIndex} on post ${postId}`);
 
     try {
+      // Send vote request to backend API
       const res = await fetch(`/api/posts/${postId}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,6 +71,7 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
 
       console.log("Vote response status:", res.status);
 
+      // Handle API errors
       if (!res.ok) {
         const data = await res.json();
         console.error("Vote error:", data);
@@ -43,26 +80,30 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
 
       console.log("Vote successful, refreshing posts...");
 
-      // First refresh the posts to get updated data
+      // Refresh post data to get updated vote counts
       if (refreshPosts) {
         await refreshPosts();
       }
 
-      // Then set hasVoted to true to show results
+      // Update UI to show results instead of voting options
       setHasVoted(true);
     } catch (err) {
       console.error("Vote failed:", err);
+      // Note: Error handling could be improved with user feedback
     } finally {
+      // Clear loading state regardless of success/failure
       setVoting(false);
     }
   };
 
   return (
     <div className="w-full flex flex-col gap-2">
+      {/* Voting instructions - only shown before user votes */}
       {!hasVoted && !voting && (
         <div className="text-xs text-gray-600 mb-1">Click to vote</div>
       )}
 
+      {/* Poll options list */}
       {currentOptions.map((option, index) => {
         const percentage = getPercentage(option.votes || 0);
 
@@ -73,22 +114,23 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
             tabIndex={0}
             className={`relative bg-pollBarGrey rounded-[0.6rem] ${
               !hasVoted && !voting
-                ? "hover:bg-pollBarHover cursor-pointer"
-                : "cursor-default"
+                ? "hover:bg-pollBarHover cursor-pointer" // Interactive styles when voting is available
+                : "cursor-default" // Static appearance after voting
             }`}
             onClick={() => !hasVoted && !voting && handleVote(index)}
             onKeyDown={(e) => {
+              // Keyboard accessibility for voting
               if (
                 (e.key === "Enter" || e.key === " ") &&
                 !hasVoted &&
                 !voting
               ) {
-                e.preventDefault(); // Prevent scrolling for Space
+                e.preventDefault(); // Prevent scrolling for Space key
                 handleVote(index);
               }
             }}
           >
-            {/* Progress bar - show after voting */}
+            {/* Progress bar showing vote percentage - only visible after voting */}
             {hasVoted && (
               <span
                 className="absolute top-0 left-0 h-full transition-all duration-500 bg-defaultYellow rounded-[0.6rem]"
@@ -96,10 +138,12 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
               />
             )}
 
+            {/* Option content container */}
             <div className="relative font-normal text-black text-[0.8rem] leading-[3.1] px-4 py-2 rounded-[0.6rem] flex justify-between items-center">
+              {/* Option label */}
               <span>{option.label}</span>
 
-              {/* Show vote count and percentage after voting */}
+              {/* Vote statistics - only shown after voting */}
               {hasVoted && (
                 <div className="flex items-center gap-2 text-xs">
                   <span>{option.votes || 0} votes</span>
@@ -111,12 +155,14 @@ export default function PollBox({ postId, initialOptions, refreshPosts }) {
         );
       })}
 
+      {/* Total vote count - only shown after voting */}
       {hasVoted && (
         <div className="text-xs text-gray-500 mt-1">
           Total votes: {totalVotes}
         </div>
       )}
 
+      {/* Loading indicator during vote submission */}
       {voting && (
         <div className="text-xs text-blue-500">Submitting vote...</div>
       )}
