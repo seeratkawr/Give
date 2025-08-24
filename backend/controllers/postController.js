@@ -11,6 +11,7 @@ exports.createPost = async (req, res) => {
       authorPhotoURL,
       polls = [],
     } = req.body;
+
     if (!content || !content.trim())
       return res.status(400).json({ error: "Content is required" });
 
@@ -27,6 +28,7 @@ exports.createPost = async (req, res) => {
             .map((p) => ({ label: String(p.label || "").trim(), votes: 0 }))
             .filter((p) => p.label)
         : [],
+      voters: [], // Initialize empty voters array
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
@@ -57,30 +59,65 @@ exports.getPosts = async (req, res) => {
 
 exports.votePoll = async (req, res) => {
   try {
-    const { postId } = req.params; // Changed from postID to postId
-    const { optionIndex } = req.body;
+    const { postId } = req.params;
+    const { optionIndex, userId } = req.body;
+
+    console.log("Vote request received:", { postId, optionIndex, userId });
 
     if (typeof optionIndex !== "number")
       return res.status(400).json({ error: "optionIndex is required" });
 
-    const postRef = db.collection("posts").doc(postId); // Changed from postID to postId
+    if (!userId) return res.status(400).json({ error: "userId is required" });
+
+    const postRef = db.collection("posts").doc(postId);
     const postSnap = await postRef.get();
     if (!postSnap.exists)
       return res.status(404).json({ error: "Post not found" });
 
     const postData = postSnap.data();
+    console.log("Current post data:", JSON.stringify(postData, null, 2));
+
     if (!Array.isArray(postData.polls) || !postData.polls[optionIndex])
       return res.status(400).json({ error: "Invalid poll option" });
 
-    //Increment the vote count atomically
-    const voteField = `polls.${optionIndex}.votes`;
-    await postRef.update({
-      [voteField]: admin.firestore.FieldValue.increment(1),
-    });
+    // Handle posts without voters array (legacy posts)
+    const voters = postData.voters || [];
+    console.log("Current voters:", voters);
+    console.log("User trying to vote:", userId);
 
+    if (voters.includes(userId)) {
+      console.log("User has already voted!");
+      return res
+        .status(400)
+        .json({ error: "You have already voted on this poll" });
+    }
+
+    // Update polls and add voter
+    const updatedPolls = [...postData.polls];
+    updatedPolls[optionIndex] = {
+      ...updatedPolls[optionIndex],
+      votes: (updatedPolls[optionIndex].votes || 0) + 1,
+    };
+
+    const updatedVoters = [...voters, userId];
+
+    console.log("Updated polls:", JSON.stringify(updatedPolls, null, 2));
+    console.log("Updated voters:", updatedVoters);
+
+    // Update the post with both polls and voters
+    const updateData = {
+      polls: updatedPolls,
+      voters: updatedVoters,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // If voters field didn't exist before, this will create it
+    await postRef.update(updateData);
+
+    console.log("Vote update successful");
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error("Vote error:", err);
     res.status(500).json({ error: "Failed to vote" });
   }
 };

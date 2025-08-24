@@ -61,6 +61,7 @@ export default function ResponsiveContainer() {
   const [pollOptions, setPollOptions] = useState([]);
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
   const fileInputRef = useRef(null);
 
   {
@@ -115,7 +116,9 @@ export default function ResponsiveContainer() {
         orderByField: "createdAt",
         orderDirection: "desc",
       });
+
       setPosts(Array.isArray(latest) ? latest : []);
+      setRefreshKey((prev) => prev + 1); // Force component updates
     } catch (err) {
       setError(err.message || "Failed to load posts");
     } finally {
@@ -167,12 +170,6 @@ export default function ResponsiveContainer() {
       setError(err.message || "Failed to create post");
     } finally {
       setSubmitting(false);
-    }
-
-    {
-      posts.map((post) => (
-        <PostData key={post.id} post={post} refreshPosts={refreshPosts} />
-      ));
     }
   }
 
@@ -357,6 +354,14 @@ export default function ResponsiveContainer() {
               </button>
             </div>
           </form>
+
+          {posts.map((post) => (
+            <PostData
+              key={`${post.id}-${refreshKey}`}
+              post={post}
+              refreshPosts={refreshPosts}
+            />
+          ))}
         </div>
       </div>
     </div>

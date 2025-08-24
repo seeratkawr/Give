@@ -64,6 +64,7 @@ const PostData = ({ post, refreshPosts }) => {
           postId={post.id}
           initialOptions={polls}
           refreshPosts={refreshPosts}
+          post={post}
         />
       )}
 
