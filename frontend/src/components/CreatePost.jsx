@@ -354,14 +354,6 @@ export default function ResponsiveContainer() {
               </button>
             </div>
           </form>
-
-          {posts.map((post) => (
-            <PostData
-              key={`${post.id}-${refreshKey}`}
-              post={post}
-              refreshPosts={refreshPosts}
-            />
-          ))}
         </div>
       </div>
     </div>
